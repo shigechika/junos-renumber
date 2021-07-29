@@ -76,7 +76,7 @@ BEGIN {
 	    last = $9
 	    name = sprintf( "%s-%03d", prefix, num )
 	    if (last != name) {
-		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" " to policy "" name
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" to policy "name
 	    }
 	}
     } else {
