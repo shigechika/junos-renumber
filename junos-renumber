@@ -4,14 +4,16 @@
 #   show configuretion | display set
 # - Automatic detecting MX or SRX
 # - Default line count up 10 unit.
-#   If you want another unit, run with -v "unit=1" option
+#   If you want another unit, please run with -v "unit=1" option.
+# - If you conflicted exist rule#, please pipe to tac(tail -r).
 # - Good luck :-)
 BEGIN {
-    num =0
     reset = 1
     if (unit == "") {
 	unit = 10
     }
+    num = unit
+    numnum = unit
 }
 
 # MX
@@ -28,25 +30,42 @@ BEGIN {
 /set services stateful-firewall rule .* term/ {
     if ( reset ) {
 	prefix = $7
-	sub("-[0-9]+$", "", prefix)
+	if (prefix ~ "-[0-9]+-[0-9]+$") {
+	    print "NUMNUM"
+       	    sub("-[0-9]+-[0-9]+$", "", prefix)
+	} else if (prefix ~ "-[0-9]+$") {
+	    print "NO NUM"
+       	    sub("-[0-9]+$", "", prefix)
+	}
 	regexp = prefix"-[0-9]+$"
+	regnum = prefix"-[0-9]+-[0-9]+$"
 #	print "PREFIX:" prefix
 #	print "REGEXP:" regexp
+#	print "REGNUM:" regnum
 	reset = 0
     }
-    if ($7 ~ regexp) {
+    if ($7 ~ regnum) {
 	if (last != $7) {
-	    num = num + unit
+	    last = $7
+	    name = sprintf( "%s-%03d-%03d", prefix, num, numnum )
+	    if (last != name) {
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" to term "name
+	    }
+	    numnum = numnum + unit
+	}
+    } else if ($7 ~ regexp) {
+	if (last != $7) {
 	    last = $7
 	    name = sprintf( "%s-%03d", prefix, num )
 	    if (last != name) {
 		print "rename "$2" "$3" "$4" "$5" "$6" "$7" to term "name
 	    }
-
+	    num = num + unit
 	}
     } else {
 	reset = 1
-	num = 0
+	num = unit
+	numnum = unit
     }
 }
 
@@ -54,33 +73,53 @@ BEGIN {
 # before
 # set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-1 match ...
 # set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-2 match ...
-# set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3 match ...
+# set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-1 match ...
+# set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-2 match ...
 # 1   2        3        4         5       6       7     8      9               10    11
 # after
-# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-1 to policy Untrust-Trust-010
-# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-2 to policy Untrust-Trust-020
-# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3 to policy Untrust-Trust-030
-# 1      2        3        4         5       6       7     8      9               10 11     12
+# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-1   to policy Untrust-Trust-010
+# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-2   to policy Untrust-Trust-020
+# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-1 to policy Untrust-Trust-030-010
+# rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-2 to policy Untrust-Trust-030-020
+# 1      2        3        4         5       6       7     8      9                 10 11     12
 /set security policies from-zone .* to-zone .* policy/ {
     if ( reset ) {
 	prefix = $9
-	sub("-[0-9]+$", "", prefix)
+	if (prefix ~ "-[0-9]+-[0-9]+$") {
+	    print "NUMNUM"
+       	    sub("-[0-9]+-[0-9]+$", "", prefix)
+	} else if (prefix ~ "-[0-9]+$") {
+	    print "NO NUM"
+       	    sub("-[0-9]+$", "", prefix)
+	}
 	regexp = prefix"-[0-9]+$"
+	regnum = prefix"-[0-9]+-[0-9]+$"
 #	print "PREFIX:" prefix
 #	print "REGEXP:" regexp
+#	print "REGNUM:" regnum
 	reset = 0
     }
-    if ($9 ~ regexp) {
+    if ($9 ~ regnum ) {
 	if (last != $9) {
-	    num = num + unit
+	    last = $9
+	    name = sprintf( "%s-%03d-%03d", prefix, num, numnum )
+	    if (last != name) {
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" to policy "name
+	    }
+	    numnum = numnum + unit
+	}
+    } else if ($9 ~ regexp) {
+	if (last != $9) {
 	    last = $9
 	    name = sprintf( "%s-%03d", prefix, num )
 	    if (last != name) {
 		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" to policy "name
 	    }
+	    num = num + unit
 	}
     } else {
 	reset = 1
-	num = 0
+	num = unit
+	numnum = unit
     }
 }
