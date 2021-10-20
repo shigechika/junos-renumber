@@ -29,12 +29,16 @@ set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-1 mat
 set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-2 match ...
 set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-1 match ...
 set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-2 match ...
+set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-4 match ...
+set security policies from-zone Untrust to-zone Trust policy Untrust-Trust-5-1 match ...
 
 # after
 rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-1 to policy Untrust-Trust-010
 rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-2 to policy Untrust-Trust-020
 rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-1 to policy Untrust-Trust-030-010
 rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-3-2 to policy Untrust-Trust-030-020
+rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-4 to policy Untrust-Trust-040
+rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-5-1 to policy Untrust-Trust-050-010
 ```
 
 - Default line count up 10 unit.
