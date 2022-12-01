@@ -1,11 +1,11 @@
 #!/usr/bin/awk -f
-# junos-renumber - Juniper MX's stateful-firewall and SRX's policy rules renumbering
+# junos-renumber - Juniper MX's stateful-firewall, SRX's policy rules and Firewall Filter(ACL) renumbering
 # - Input display set sytle config.
 #   show configuretion | display set
-# - Automatic detecting MX or SRX
+# - Automatic detecting MX, SRX or ACL syntax.
 # - Default line count up 10 unit.
 #   If you want another unit, please run with -v "unit=1" option.
-# - If you conflicted exist rule#, please pipe to tac(tail -r).
+# - If you conflicted exist rule#, please use pipe to tac(tail -r).
 # - Good luck :-)
 BEGIN {
     reset = 1
@@ -126,6 +126,79 @@ BEGIN {
 	    name = sprintf( "%s-%03d", prefix, num )
 	    if (last != name) {
 		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" "$9" to policy "name
+	    }
+	    num = num + unit
+	}
+    } else {
+	reset = 1
+	num = unit
+	numnum = unit
+    }
+}
+
+# ACL (Firewall Filter)
+# before
+# set firewall family inet  filter ACL-IPv4 term 1 from ...
+# set firewall family inet  filter ACL-IPv4 term 2 from ...
+# set firewall family inet6 filter ACL-IPv6 term 6 from ...
+# 1   2        3      4     5      6        7    8 9    10
+# after
+# rename firewall family inet  filter ACL-IPv4 term 1 to term 10
+# rename firewall family inet  filter ACL-IPv4 term 2 to term 20
+# rename firewall family inet6 filter ACL-IPv6 term 6 to term 10
+/set firewall family inet6? filter .* term / {
+    if ( reset ) {
+	prefix = $8
+	if (prefix ~ "-[0-9]+-[0-9]+$") {
+#	    print "NUMNUM"
+       	    sub("-[0-9]+-[0-9]+$", "", prefix)
+	} else if (prefix ~ "-[0-9]+$") {
+#	    print "NO NUM"
+       	    sub("-[0-9]+$", "", prefix)
+	} else if (prefix ~ "[0-9]+$") {
+#	    print "NO PREFIX, NUM ONLY"
+       	    sub("[0-9]+$", "", prefix)
+	}
+	number = "[0-9]+$"
+	regexp = prefix"-[0-9]+$"
+	regnum = prefix"-[0-9]+-[0-9]+$"
+#	print "PREFIX:" prefix
+#	print "REGEXP:" regexp
+#	print "REGNUM:" regnum
+	reset = 0
+    }
+    if ($8 ~ regnum ) {
+	if (last != $8) {
+	    last = $8
+	    name = sprintf( "%s-%02d-%02d", prefix, num, numnum )
+	    if (last != name) {
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" to term "name
+	    }
+	    numnum = numnum + unit
+	}
+    } else if ($8 ~ regexp) {
+	if (last != $8) {
+	    last = $8
+	    if (numnum > unit) {
+		numnum = unit
+		num = num + unit
+	    }
+	    name = sprintf( "%s-%02d", prefix, num )
+	    if (last != name) {
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" to term "name
+	    }
+	    num = num + unit
+	}
+    } else if ($8 ~ number) {
+	if (last != $8) {
+	    last = $8
+	    if (numnum > unit) {
+		numnum = unit
+		num = num + unit
+	    }
+	    name = sprintf( "%02d", num )
+	    if (last != name) {
+		print "rename "$2" "$3" "$4" "$5" "$6" "$7" "$8" to term "name
 	    }
 	    num = num + unit
 	}
