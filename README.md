@@ -1,4 +1,4 @@
-Juniper MX's stateful-firewall and SRX's policy rules renumbering
+Juniper Renumber RULE# of MX stateful-firewall and SRX policy rules and JUNOS ACL (firewall filter) 
 - Input display set sytle config, Output stdout.
 ```
 show configuretion | display set
@@ -41,6 +41,20 @@ rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-4 
 rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-5-1 to policy Untrust-Trust-050-010
 ```
 
+- ACL(firewall filter) sample
+
+```
+# before
+set firewall family inet filter ACL-IPv4 term 4 from ...
+set firewall family inet filter ACL-IPv4 term 5 from ...
+set firewall family inet6 filter ACL-IPv6 term 6 from ...
+
+# after
+rename firewall family inet filter ACL-IPv4 term 4 to term 10
+rename firewall family inet filter ACL-IPv4 term 5 to term 20
+rename firewall family inet6 filter ACL-IPv6 term 6 to term 10
+```
+
 - Default line count up 10 unit.
   - If you want another unit, please run with -v "unit=1" option
 ```
@@ -51,5 +65,6 @@ rename security policies from-zone Untrust to-zone Trust policy Untrust-Trust-5-
 ```
 ./junos-renumber -v "unit=1" show-configuration-display-set.txt | tac
 ```
+
 
 - Good luck :-)
